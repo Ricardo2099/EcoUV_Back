@@ -12,7 +12,7 @@ public class PostDTO {
   private Long id;
   private String autor;
   private String contenido;
-  private LocalDateTime creadoEn; // <-- ahora LocalDateTime
+  private LocalDateTime creadoEn; 
   private long likes;
 
   public static PostDTO of(Post p, long likes){
@@ -20,7 +20,7 @@ public class PostDTO {
         p.getId(),
         p.getAutor().getNombre(),
         p.getContenido(),
-        p.getCreadoEn(),   // <-- coincide con LocalDateTime
+        p.getCreadoEn(),   
         likes
     );
   }
