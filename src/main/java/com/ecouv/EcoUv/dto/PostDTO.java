@@ -9,19 +9,23 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 public class PostDTO {
-  private Long id;
-  private String autor;
-  private String contenido;
-  private LocalDateTime creadoEn; 
-  private long likes;
+    private Long id;
+    private String autor;
+    private String contenido;
+    private LocalDateTime creadoEn;
+    private long likes;
 
-  public static PostDTO of(Post p, long likes){
-    return new PostDTO(
-        p.getId(),
-        p.getAutor().getNombre(),
-        p.getContenido(),
-        p.getCreadoEn(),   
-        likes
-    );
-  }
+    public static PostDTO of(Post p, long likes) {
+        String autorNombre = (p.getAutor() != null)
+                ? p.getAutor().getNombreCompleto()  // 👈 usamos el helper de User
+                : "Anónimo";
+
+        return new PostDTO(
+                p.getId(),
+                autorNombre,
+                p.getContenido(),
+                p.getCreadoEn(),
+                likes
+        );
+    }
 }

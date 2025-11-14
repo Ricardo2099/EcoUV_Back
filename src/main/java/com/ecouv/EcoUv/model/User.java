@@ -1,61 +1,84 @@
 package com.ecouv.EcoUv.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "users") // "user" es palabra reservada en Postgres
-public class User {
+@Table(name = "usuarios")
+@Data
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String nombre; // Ej: "Juan Pérez"
+    // 1. Datos personales
+    @Column(nullable = false, length = 100)
+    private String nombres;
+
+    @Column(nullable = false, length = 100)
+    private String apellidos;
+
+    // 2. Credenciales
+    @Column(nullable = false, unique = true, length = 150)
+    private String emailInstitucional;
+
+    @Column(nullable = false, unique = true, length = 20)
+    private String matricula;
 
     @Column(nullable = false)
-    private String carrera; // Ej: "Ing. Software"
+    private String passwordHash;
+
+    // 3. Datos académicos
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "carrera_id")
+    private Carrera carrera;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "plan_id")
+    private Plan plan;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "grupo_id")
+    private Grupo grupo;
 
     @Column(nullable = false)
-    private Integer semestre; // Ej: 3,4,5...
+    private Integer semestre;
 
-    @Column(nullable = false)
-    private String grupoAcademico; // Ej: "Grupo A"
+    @Column(nullable = false, length = 50)
+    private String campus;
 
-    @Column(nullable = false, unique = true)
-    private String username; // matrícula o correo UV
+    // Helpers
+    public String getNombreCompleto() {
+        return nombres + " " + apellidos;
+    }
 
-    @Column(nullable = false)
-    private String passwordHash; // guardamos hash, no texto plano
+    /* ==== UserDetails ==== */
 
-    @OneToMany(mappedBy = "autor")
-    private List<Post> posts;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Por ahora todos son ROLE_USER. Luego podemos añadir roles.
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    }
 
-    @OneToMany(mappedBy = "autor")
-    private List<Comentario> comentarios;
+    @Override
+    public String getPassword() {
+        return passwordHash;
+    }
 
-    public User() {}
+    @Override
+    public String getUsername() {
+        return emailInstitucional; // Lo usaremos como "username" para login
+    }
 
-    // Getters y setters básicos
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-
-    public String getCarrera() { return carrera; }
-    public void setCarrera(String carrera) { this.carrera = carrera; }
-
-    public Integer getSemestre() { return semestre; }
-    public void setSemestre(Integer semestre) { this.semestre = semestre; }
-
-    public String getGrupoAcademico() { return grupoAcademico; }
-    public void setGrupoAcademico(String grupoAcademico) { this.grupoAcademico = grupoAcademico; }
-
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
-
-    public String getPasswordHash() { return passwordHash; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled() { return true; }
 }
