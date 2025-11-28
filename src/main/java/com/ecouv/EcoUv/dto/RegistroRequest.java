@@ -16,7 +16,7 @@ public class RegistroRequest {
 
     // 2. Credenciales
     @Email
-    @EmailInstitucional(dominio = "@uv.mx") // ajusta dominio si es otro
+    @EmailInstitucional(dominio = "@uv.mx") // ajusta dominio si hace falta
     @NotBlank
     private String emailInstitucional;
 
@@ -24,7 +24,7 @@ public class RegistroRequest {
     private String matricula;
 
     @NotBlank
-    @Size(min = 8)
+    @Size(min = 4) // para pruebas puedes dejar 4; luego subes a 8
     private String password;
 
     // 3. Datos académicos

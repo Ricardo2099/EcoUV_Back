@@ -17,7 +17,7 @@ public class PostDTO {
 
     public static PostDTO of(Post p, long likes) {
         String autorNombre = (p.getAutor() != null)
-                ? p.getAutor().getNombreCompleto()  // 👈 usamos el helper de User
+                ? p.getAutor().getNombreCompleto()
                 : "Anónimo";
 
         return new PostDTO(

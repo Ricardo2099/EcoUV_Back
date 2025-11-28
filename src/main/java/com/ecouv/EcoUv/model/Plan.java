@@ -12,10 +12,15 @@ public class Plan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Ej. "2020", "PE-2019", etc.
+    // Ej. "PE-2020"
     @Column(nullable = false, length = 50)
     private String clave;
 
     @Column(nullable = false, length = 150)
     private String nombre;
+
+    // Carrera a la que pertenece este plan
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "carrera_id")
+    private Carrera carrera;
 }

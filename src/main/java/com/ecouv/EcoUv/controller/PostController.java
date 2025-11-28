@@ -1,39 +1,110 @@
 package com.ecouv.EcoUv.controller;
 
+import com.ecouv.EcoUv.dto.*;
+import com.ecouv.EcoUv.model.Comentario;
 import com.ecouv.EcoUv.model.Post;
 import com.ecouv.EcoUv.service.PostService;
+import com.ecouv.EcoUv.service.ReaccionService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// Más adelante protegemos con seguridad/JWT.
-// Por ahora lo dejamos público para poder probar.
 @RestController
 @RequestMapping("/api/posts")
+@RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
-    public PostController(PostService postService) {
-        this.postService = postService;
-    }
+    private final ReaccionService reaccionService;
 
-    // Crear post
-    // Ejemplo de uso (temporal sin auth real):
-    // POST /api/posts?userId=1&grupoId=2&contenido=Hola%20a%20todos
+    /**
+     * Crear un post nuevo.
+     * El front manda el autorId (id del User) y el contenido.
+     */
     @PostMapping
-    public Post crearPost(
-            @RequestParam Long userId,
-            @RequestParam Long grupoId,
-            @RequestParam String contenido,
-            @RequestParam(required = false) String adjuntoUrl
-    ) {
-        return postService.crearPost(userId, grupoId, contenido, adjuntoUrl);
+    public ResponseEntity<PostDTO> crearPost(@Valid @RequestBody CreatePostRequest req) {
+        Post post = postService.crearPost(req);
+        long likes = reaccionService.contarReaccionesDePost(post.getId());
+        PostDTO dto = PostDTO.of(post, likes);
+        return ResponseEntity.ok(dto);
     }
 
-    // Obtener feed de un grupo concreto
-    // GET /api/posts/grupo/2
-    @GetMapping("/grupo/{grupoId}")
-    public List<Post> feedPorGrupo(@PathVariable Long grupoId) {
-        return postService.feedDeGrupo(grupoId);
+    /**
+     * Feed para un usuario: posts de su grupo.
+     * GET /api/posts/feed?userId=1
+     */
+    @GetMapping("/feed")
+    public ResponseEntity<List<PostDTO>> feed(@RequestParam Long userId) {
+        List<Post> posts = postService.feedDeUsuario(userId);
+        List<PostDTO> dtos = posts.stream()
+                .map(p -> PostDTO.of(p, reaccionService.contarReaccionesDePost(p.getId())))
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    /**
+     * Mis publicaciones: posts creados por el usuario.
+     * GET /api/posts/mios?userId=1
+     */
+    @GetMapping("/mios")
+    public ResponseEntity<List<PostDTO>> misPosts(@RequestParam Long userId) {
+        List<Post> posts = postService.postsDeUsuario(userId);
+        List<PostDTO> dtos = posts.stream()
+                .map(p -> PostDTO.of(p, reaccionService.contarReaccionesDePost(p.getId())))
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    /**
+     * Crear comentario en un post.
+     * POST /api/posts/{postId}/comentarios
+     */
+    @PostMapping("/{postId}/comentarios")
+    public ResponseEntity<CommentResponse> comentar(
+            @PathVariable Long postId,
+            @Valid @RequestBody CreateCommentRequest req
+    ) {
+        Comentario c = postService.crearComentario(postId, req);
+        return ResponseEntity.ok(CommentResponse.fromEntity(c));
+    }
+
+    /**
+     * Listar comentarios de un post.
+     * GET /api/posts/{postId}/comentarios
+     */
+    @GetMapping("/{postId}/comentarios")
+    public ResponseEntity<List<CommentResponse>> comentarios(@PathVariable Long postId) {
+        List<Comentario> comentarios = postService.comentariosDePost(postId);
+        List<CommentResponse> dtos = comentarios.stream()
+                .map(CommentResponse::fromEntity)
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    /**
+     * Toggle de reacción (like/corazón).
+     * POST /api/posts/{postId}/reacciones/toggle?userId=1
+     * Devuelve el nuevo conteo de likes.
+     */
+    @PostMapping("/{postId}/reacciones/toggle")
+    public ResponseEntity<Long> toggleReaccion(
+            @PathVariable Long postId,
+            @RequestParam Long userId
+    ) {
+        long total = reaccionService.toggleReaccion(postId, userId);
+        return ResponseEntity.ok(total);
+    }
+
+    /**
+     * Obtener número de reacciones de un post.
+     * GET /api/posts/{postId}/reacciones/count
+     */
+    @GetMapping("/{postId}/reacciones/count")
+    public ResponseEntity<Long> contarReacciones(@PathVariable Long postId) {
+        long total = reaccionService.contarReaccionesDePost(postId);
+        return ResponseEntity.ok(total);
     }
 }

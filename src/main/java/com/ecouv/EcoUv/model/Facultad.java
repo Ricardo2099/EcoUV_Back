@@ -7,29 +7,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "carreras")
+@Table(name = "facultades")
 @Data
-public class Carrera {
+public class Facultad {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Ej: "Ingeniería de Software"
+    // Ej: "Facultad de Ingeniería"
     @Column(nullable = false, unique = true, length = 150)
     private String nombre;
 
-    // Ej: "IS"
+    // Ej: "FI"
     @Column(length = 20, unique = true)
     private String clave;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "facultad_id")
-    private Facultad facultad;
-
-    @OneToMany(mappedBy = "carrera")
-    private List<Plan> planes = new ArrayList<>();
-
-    @OneToMany(mappedBy = "carrera")
-    private List<Grupo> grupos = new ArrayList<>();
+    @OneToMany(mappedBy = "facultad")
+    private List<Carrera> carreras = new ArrayList<>();
 }

@@ -54,16 +54,16 @@ public class User implements UserDetails {
     @Column(nullable = false, length = 50)
     private String campus;
 
-    // Helpers
+    // Helper POO
     public String getNombreCompleto() {
         return nombres + " " + apellidos;
     }
 
-    /* ==== UserDetails ==== */
+    /* ====== UserDetails (para más adelante cuando metas seguridad) ====== */
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Por ahora todos son ROLE_USER. Luego podemos añadir roles.
+        // Por ahora todos son ROLE_USER
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
@@ -74,7 +74,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return emailInstitucional; // Lo usaremos como "username" para login
+        return emailInstitucional;
     }
 
     @Override public boolean isAccountNonExpired() { return true; }

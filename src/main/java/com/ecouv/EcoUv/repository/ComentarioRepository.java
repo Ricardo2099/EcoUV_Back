@@ -8,6 +8,5 @@ import java.util.List;
 
 public interface ComentarioRepository extends JpaRepository<Comentario, Long> {
 
-    // Listar los comentarios de un post, más viejos primero
     List<Comentario> findByPostOrderByCreadoEnAsc(Post post);
 }
