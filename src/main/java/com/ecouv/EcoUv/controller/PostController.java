@@ -33,12 +33,39 @@ public class PostController {
     }
 
     /**
-     * Feed para un usuario: posts de su grupo.
+     * Feed por GRUPO (muro del salón actual del usuario).
      * GET /api/posts/feed?userId=1
      */
     @GetMapping("/feed")
-    public ResponseEntity<List<PostDTO>> feed(@RequestParam Long userId) {
-        List<Post> posts = postService.feedDeUsuario(userId);
+    public ResponseEntity<List<PostDTO>> feedPorGrupo(@RequestParam Long userId) {
+        List<Post> posts = postService.feedDeUsuarioPorGrupo(userId);
+        List<PostDTO> dtos = posts.stream()
+                .map(p -> PostDTO.of(p, reaccionService.contarReaccionesDePost(p.getId())))
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    /**
+     * Feed por CARRERA (todos los grupos y semestres de la misma carrera).
+     * GET /api/posts/feed/carrera?userId=1
+     */
+    @GetMapping("/feed/carrera")
+    public ResponseEntity<List<PostDTO>> feedPorCarrera(@RequestParam Long userId) {
+        List<Post> posts = postService.feedDeUsuarioPorCarrera(userId);
+        List<PostDTO> dtos = posts.stream()
+                .map(p -> PostDTO.of(p, reaccionService.contarReaccionesDePost(p.getId())))
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    /**
+     * Feed por CARRERA + SEMESTRE.
+     * Ej: todos los posts de 3er semestre de Ingeniería de Software.
+     * GET /api/posts/feed/carrera-semestre?userId=1
+     */
+    @GetMapping("/feed/carrera-semestre")
+    public ResponseEntity<List<PostDTO>> feedPorCarreraYSemestre(@RequestParam Long userId) {
+        List<Post> posts = postService.feedDeUsuarioPorCarreraYSemestre(userId);
         List<PostDTO> dtos = posts.stream()
                 .map(p -> PostDTO.of(p, reaccionService.contarReaccionesDePost(p.getId())))
                 .toList();

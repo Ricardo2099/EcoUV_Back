@@ -2,6 +2,7 @@ package com.ecouv.EcoUv.service;
 
 import com.ecouv.EcoUv.dto.CreateCommentRequest;
 import com.ecouv.EcoUv.dto.CreatePostRequest;
+import com.ecouv.EcoUv.model.Carrera;
 import com.ecouv.EcoUv.model.Comentario;
 import com.ecouv.EcoUv.model.Grupo;
 import com.ecouv.EcoUv.model.Post;
@@ -50,9 +51,9 @@ public class PostService {
     }
 
     /**
-     * Feed de un usuario: posts de su grupo, más recientes primero.
+     * Feed por grupo (muro del salón actual del usuario).
      */
-    public List<Post> feedDeUsuario(Long userId) {
+    public List<Post> feedDeUsuarioPorGrupo(Long userId) {
         User usuario = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -62,6 +63,43 @@ public class PostService {
         }
 
         return postRepository.findByGrupoOrderByCreadoEnDesc(grupo);
+    }
+
+    /**
+     * Feed por carrera (todos los grupos/semestres de la misma carrera).
+     */
+    public List<Post> feedDeUsuarioPorCarrera(Long userId) {
+        User usuario = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Carrera carrera = usuario.getCarrera();
+        if (carrera == null) {
+            throw new RuntimeException("El usuario no tiene carrera asignada");
+        }
+
+        return postRepository.findByGrupo_CarreraOrderByCreadoEnDesc(carrera);
+    }
+
+    /**
+     * Feed por carrera + semestre (ej. todos los grupos de 3er semestre de Ing. Software).
+     */
+    public List<Post> feedDeUsuarioPorCarreraYSemestre(Long userId) {
+        User usuario = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Carrera carrera = usuario.getCarrera();
+        if (carrera == null) {
+            throw new RuntimeException("El usuario no tiene carrera asignada");
+        }
+
+        Integer semestre = usuario.getSemestre();
+        if (semestre == null) {
+            throw new RuntimeException("El usuario no tiene semestre definido");
+        }
+
+        return postRepository.findByGrupo_CarreraAndGrupo_SemestreOrderByCreadoEnDesc(
+                carrera, semestre
+        );
     }
 
     /**
