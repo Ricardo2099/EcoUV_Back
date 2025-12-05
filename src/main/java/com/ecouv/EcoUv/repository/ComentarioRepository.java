@@ -9,4 +9,6 @@ import java.util.List;
 public interface ComentarioRepository extends JpaRepository<Comentario, Long> {
 
     List<Comentario> findByPostOrderByCreadoEnAsc(Post post);
+    List<Comentario> findByPostIdOrderByCreadoEnDesc(Long postId);
+
 }

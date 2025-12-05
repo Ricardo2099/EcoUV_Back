@@ -16,7 +16,7 @@ public class RegistroRequest {
 
     // 2. Credenciales
     @Email
-    @EmailInstitucional(dominio = "@uv.mx") // ajusta dominio si hace falta
+    @EmailInstitucional(dominio = "@estudiantes.uv.mx")
     @NotBlank
     private String emailInstitucional;
 

@@ -1,15 +1,10 @@
 package com.ecouv.EcoUv.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class CreateCommentRequest {
-
-    @NotNull
-    private Long autorId;   // id del User que comenta
-
-    @NotBlank
+    private Long postId;
+    private Long autorId;
     private String texto;
 }

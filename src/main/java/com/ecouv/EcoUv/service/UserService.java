@@ -66,7 +66,7 @@ public class UserService {
      * Login simple: valida correo + password y devuelve el usuario.
      */
     public User login(LoginRequest req) {
-        User user = userRepository.findByEmailInstitucional(req.getEmail())
+        User user = userRepository.findByEmailInstitucional(req.getEmailInstitucional())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         // Como estamos guardando password plano en passwordHash, comparamos directo.

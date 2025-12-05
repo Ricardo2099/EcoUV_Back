@@ -1,24 +1,18 @@
 package com.ecouv.EcoUv.repository;
 
-import com.ecouv.EcoUv.model.Carrera;
-import com.ecouv.EcoUv.model.Grupo;
-import com.ecouv.EcoUv.model.Post;
-import com.ecouv.EcoUv.model.User;
+import com.ecouv.EcoUv.model.*;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    // Feed: posts de un grupo, más recientes primero
-    List<Post> findByGrupoOrderByCreadoEnDesc(Grupo grupo);
+    List<Post> findByGrupoAndTipoFeedOrderByCreadoEnDesc(Grupo grupo, String tipoFeed);
 
-    // "Mis publicaciones"
-    List<Post> findByAutorOrderByCreadoEnDesc(User autor);
+    List<Post> findByCarreraAndTipoFeedOrderByCreadoEnDesc(Carrera carrera, String tipoFeed);
 
-    // Feed por carrera (toda la carrera, sin filtrar semestre)
-    List<Post> findByGrupo_CarreraOrderByCreadoEnDesc(Carrera carrera);
+    List<Post> findByPlanAndTipoFeedOrderByCreadoEnDesc(Plan plan, String tipoFeed);
 
-    // Feed por carrera + semestre (ej. Ing. Software, 3er semestre)
-    List<Post> findByGrupo_CarreraAndGrupo_SemestreOrderByCreadoEnDesc(Carrera carrera, Integer semestre);
+    List<Post> findByFacultadAndTipoFeedOrderByCreadoEnDesc(Facultad facultad, String tipoFeed);
+
+    List<Post> findBySemestreAndTipoFeedOrderByCreadoEnDesc(Integer semestre, String tipoFeed);
 }

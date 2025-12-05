@@ -1,5 +1,6 @@
 package com.ecouv.EcoUv.service;
 
+import com.ecouv.EcoUv.dto.ReaccionRequest;
 import com.ecouv.EcoUv.model.Post;
 import com.ecouv.EcoUv.model.Reaccion;
 import com.ecouv.EcoUv.model.User;
@@ -16,44 +17,41 @@ import java.time.LocalDateTime;
 public class ReaccionService {
 
     private final ReaccionRepository reaccionRepository;
-    private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
 
-    /**
-     * Hace toggle de la reacción:
-     * - Si el usuario ya reaccionó a ese post, se elimina la reacción.
-     * - Si no ha reaccionado, se crea.
-     * Devuelve el número total de reacciones del post después del cambio.
-     */
-    public long toggleReaccion(Long postId, Long usuarioId) {
+    public Reaccion darLike(ReaccionRequest req) {
 
-        Post post = postRepository.findById(postId)
+        User usuario = userRepository.findById(req.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Post post = postRepository.findById(req.getPostId())
                 .orElseThrow(() -> new RuntimeException("Post no encontrado"));
+
+        // Si ya existe like → NO crear otro
+        return reaccionRepository.findByUsuarioAndPost(usuario, post)
+                .orElseGet(() -> {
+                    Reaccion r = new Reaccion();
+                    r.setUsuario(usuario);
+                    r.setPost(post);
+                    r.setCreadoEn(LocalDateTime.now());
+                    return reaccionRepository.save(r);
+                });
+    }
+
+    public void quitarLike(Long usuarioId, Long postId) {
 
         User usuario = userRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        var existenteOpt = reaccionRepository.findByPostAndUsuario(post, usuario);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post no encontrado"));
 
-        if (existenteOpt.isPresent()) {
-            // Ya había like -> lo quitamos
-            reaccionRepository.delete(existenteOpt.get());
-        } else {
-            // No había -> lo creamos
-            Reaccion r = new Reaccion();
-            r.setPost(post);
-            r.setUsuario(usuario);
-            r.setCreadoEn(LocalDateTime.now());
-            reaccionRepository.save(r);
-        }
-
-        return reaccionRepository.countByPost(post);
+        reaccionRepository.findByUsuarioAndPost(usuario, post)
+                .ifPresent(reaccionRepository::delete);
     }
 
-    /**
-     * Obtiene el número de reacciones de un post.
-     */
-    public long contarReaccionesDePost(Long postId) {
+    public int contarLikes(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post no encontrado"));
 

@@ -1,21 +1,15 @@
 package com.ecouv.EcoUv.controller;
 
-import com.ecouv.EcoUv.model.Carrera;
-import com.ecouv.EcoUv.model.Facultad;
-import com.ecouv.EcoUv.model.Grupo;
-import com.ecouv.EcoUv.model.Plan;
-import com.ecouv.EcoUv.repository.CarreraRepository;
-import com.ecouv.EcoUv.repository.FacultadRepository;
-import com.ecouv.EcoUv.repository.GrupoRepository;
-import com.ecouv.EcoUv.repository.PlanRepository;
-import lombok.RequiredArgsConstructor;
+import com.ecouv.EcoUv.model.*;
+import com.ecouv.EcoUv.repository.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/catalogos")
-@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class CatalogController {
 
     private final FacultadRepository facultadRepository;
@@ -23,56 +17,82 @@ public class CatalogController {
     private final PlanRepository planRepository;
     private final GrupoRepository grupoRepository;
 
-    /**
-     * Facultades
-     */
-    @GetMapping("/facultades")
-    public List<Facultad> listarFacultades() {
-        return facultadRepository.findAll();
+    public CatalogController(
+            FacultadRepository facultadRepository,
+            CarreraRepository carreraRepository,
+            PlanRepository planRepository,
+            GrupoRepository grupoRepository
+    ) {
+        this.facultadRepository = facultadRepository;
+        this.carreraRepository = carreraRepository;
+        this.planRepository = planRepository;
+        this.grupoRepository = grupoRepository;
     }
 
-    /**
-     * Carreras:
-     * - Si se manda facultadId -> solo las de esa facultad.
-     * - Si no -> todas.
-     */
-    @GetMapping("/carreras")
-    public List<Carrera> listarCarreras(@RequestParam(required = false) Long facultadId) {
-        if (facultadId == null) {
-            return carreraRepository.findAll();
-        }
+    // ==========================
+    // 1. LISTAR FACULTADES
+    // ==========================
+    @GetMapping("/facultades")
+    public ResponseEntity<?> obtenerFacultades() {
+        List<Facultad> facultades = facultadRepository.findAll();
+        return ResponseEntity.ok(facultades);
+    }
+
+    // ==========================
+    // 2. CARRERAS POR FACULTAD
+    // ==========================
+    @GetMapping("/carreras/{facultadId}")
+    public ResponseEntity<?> obtenerCarreras(@PathVariable Long facultadId) {
+
         Facultad facultad = facultadRepository.findById(facultadId)
                 .orElseThrow(() -> new RuntimeException("Facultad no encontrada"));
-        return carreraRepository.findByFacultad(facultad);
+
+        List<Carrera> carreras = carreraRepository.findByFacultad(facultad);
+
+        return ResponseEntity.ok(carreras);
     }
 
-    /**
-     * Planes de estudio de una carrera.
-     */
-    @GetMapping("/planes")
-    public List<Plan> listarPlanes(@RequestParam Long carreraId) {
-        Carrera carrera = carreraRepository.findById(carreraId)
-                .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
-        return planRepository.findByCarrera(carrera);
-    }
+    // ==========================
+    // 3. PLANES POR CARRERA
+    // ==========================
+    @GetMapping("/planes/{carreraId}")
+    public ResponseEntity<?> obtenerPlanes(@PathVariable Long carreraId) {
 
-    /**
-     * Grupos:
-     * - Requiere carreraId.
-     * - Opcional semestre = filtra grupos activos por semestre.
-     */
-    @GetMapping("/grupos")
-    public List<Grupo> listarGrupos(
-            @RequestParam Long carreraId,
-            @RequestParam(required = false) Integer semestre
-    ) {
         Carrera carrera = carreraRepository.findById(carreraId)
                 .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
 
-        if (semestre == null) {
-            return grupoRepository.findByCarreraAndActivoTrue(carrera);
-        } else {
-            return grupoRepository.findByCarreraAndSemestreAndActivoTrue(carrera, semestre);
-        }
+        List<Plan> planes = planRepository.findByCarrera(carrera);
+
+        return ResponseEntity.ok(planes);
     }
+
+    // ==========================
+    // 4. GRUPOS POR CARRERA
+    // ==========================
+    @GetMapping("/grupos/{carreraId}")
+    public ResponseEntity<?> obtenerGrupos(@PathVariable Long carreraId) {
+
+        Carrera carrera = carreraRepository.findById(carreraId)
+                .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
+
+        // Aquí reemplazamos los métodos que causaban error
+        List<Grupo> grupos = grupoRepository.findByCarrera(carrera);
+
+        return ResponseEntity.ok(grupos);
+    }
+
+    // ==========================
+    // 5. GRUPOS POR PLAN
+    // ==========================
+    @GetMapping("/grupos/plan/{planId}")
+    public ResponseEntity<?> obtenerGruposPorPlan(@PathVariable Long planId) {
+
+        Plan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new RuntimeException("Plan no encontrado"));
+
+        List<Grupo> grupos = grupoRepository.findByPlan(plan);
+
+        return ResponseEntity.ok(grupos);
+    }
+
 }
