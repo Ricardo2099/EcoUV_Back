@@ -1,18 +1,20 @@
 package com.ecouv.EcoUv.service;
 
 import com.ecouv.EcoUv.dto.CrearPostRequest;
+import com.ecouv.EcoUv.dto.PostResponseDTO;
 import com.ecouv.EcoUv.model.*;
 import com.ecouv.EcoUv.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
-
+ private final ReaccionRepository reaccionRepository;
+    private final ComentarioRepository comentarioRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final GrupoRepository grupoRepository;
@@ -20,69 +22,94 @@ public class PostService {
     private final PlanRepository planRepository;
     private final FacultadRepository facultadRepository;
 
-    public Post crearPost(CrearPostRequest req) {
+    // ======================================================
+    // CREAR POST
+    // ======================================================
+    public PostResponseDTO crearPost(CrearPostRequest req) {
 
         User autor = userRepository.findById(req.getAutorId())
-                .orElseThrow(() -> new RuntimeException("Autor no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         Grupo grupo = grupoRepository.findById(req.getGrupoId())
                 .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
 
-        Post p = new Post();
-        p.setAutor(autor);
-        p.setGrupo(grupo);
-        p.setContenido(req.getContenido());
-        p.setAdjuntoUrl(req.getAdjuntoUrl());
-        p.setTipoFeed(req.getTipoFeed());
+        Carrera carrera = carreraRepository.findById(req.getCarreraId())
+                .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
 
-        p.setCarrera(autor.getCarrera());
-        p.setPlan(autor.getPlan());
-        p.setFacultad(autor.getCarrera().getFacultad());
-        p.setSemestre(autor.getSemestre());
-        p.setCreadoEn(LocalDateTime.now());
+        Plan plan = planRepository.findById(req.getPlanId())
+                .orElseThrow(() -> new RuntimeException("Plan no encontrado"));
 
-        return postRepository.save(p);
+        Facultad facultad = facultadRepository.findById(req.getFacultadId())
+                .orElseThrow(() -> new RuntimeException("Facultad no encontrada"));
+
+        Post post = new Post();
+        post.setAutor(autor);
+        post.setGrupo(grupo);
+        post.setCarrera(carrera);
+        post.setPlan(plan);
+        post.setFacultad(facultad);
+        post.setSemestre(req.getSemestre());
+        post.setTipoFeed(req.getTipoFeed());
+        post.setContenido(req.getContenido());
+        post.setAdjuntoUrl(req.getAdjuntoUrl());
+
+        postRepository.save(post);
+
+        return PostResponseDTO.fromEntity(post);
     }
 
-    public Post editarPost(Long id, CrearPostRequest req) {
-        Post post = postRepository.findById(id)
+    // ======================================================
+    // LISTAR TODOS
+    // ======================================================
+    public List<PostResponseDTO> listarTodos() {
+        return postRepository.findAll()
+                .stream()
+                .map(PostResponseDTO::fromEntity)
+                .toList();
+    }
+
+    // ======================================================
+    // ELIMINAR POST (solo autor)
+    // ======================================================
+    @Transactional
+public void eliminarPost(Long postId, Long usuarioId) {
+
+    Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post no encontrado"));
+
+    if (!post.getAutor().getId().equals(usuarioId)) {
+        throw new RuntimeException("No tienes permiso para eliminar este post");
+    }
+
+    // 1. Borrar reacciones asociadas
+    reaccionRepository.deleteByPostId(postId);
+
+    // 2. Borrar comentarios asociados
+    comentarioRepository.deleteByPostId(postId);
+
+    // 3. Borrar el post
+    postRepository.delete(post);
+}
+
+
+    // ======================================================
+    // EDITAR POST (solo autor)
+    // ======================================================
+    public PostResponseDTO editarPost(Long postId, Long usuarioId, CrearPostRequest req) {
+
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post no encontrado"));
+
+        if (!post.getAutor().getId().equals(usuarioId)) {
+            throw new RuntimeException("No tienes permiso para editar este post");
+        }
 
         post.setContenido(req.getContenido());
         post.setAdjuntoUrl(req.getAdjuntoUrl());
         post.setTipoFeed(req.getTipoFeed());
 
-        return postRepository.save(post);
-    }
+        postRepository.save(post);
 
-    public void eliminarPost(Long id) {
-        if (!postRepository.existsById(id)) {
-            throw new RuntimeException("Post no encontrado");
-        }
-        postRepository.deleteById(id);
-    }
-
-    public List<Post> feedGrupo(Long grupoId) {
-        Grupo g = grupoRepository.findById(grupoId).orElseThrow();
-        return postRepository.findByGrupoAndTipoFeedOrderByCreadoEnDesc(g, "GRUPO");
-    }
-
-    public List<Post> feedCarrera(Long carreraId) {
-        Carrera c = carreraRepository.findById(carreraId).orElseThrow();
-        return postRepository.findByCarreraAndTipoFeedOrderByCreadoEnDesc(c, "CARRERA");
-    }
-
-    public List<Post> feedPlan(Long planId) {
-        Plan p = planRepository.findById(planId).orElseThrow();
-        return postRepository.findByPlanAndTipoFeedOrderByCreadoEnDesc(p, "PLAN");
-    }
-
-    public List<Post> feedFacultad(Long facultadId) {
-        Facultad f = facultadRepository.findById(facultadId).orElseThrow();
-        return postRepository.findByFacultadAndTipoFeedOrderByCreadoEnDesc(f, "FACULTAD");
-    }
-
-    public List<Post> feedSemestre(Integer sem) {
-        return postRepository.findBySemestreAndTipoFeedOrderByCreadoEnDesc(sem, "SEMESTRE");
+        return PostResponseDTO.fromEntity(post);
     }
 }

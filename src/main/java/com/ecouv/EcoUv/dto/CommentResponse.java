@@ -1,24 +1,33 @@
 package com.ecouv.EcoUv.dto;
 
 import com.ecouv.EcoUv.model.Comentario;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CommentResponse {
 
     private Long id;
-    private String autor;
     private String texto;
     private LocalDateTime creadoEn;
 
+    private Long autorId;
+    private String autorNombre;
+
     public static CommentResponse fromEntity(Comentario c) {
-        CommentResponse dto = new CommentResponse();
-        dto.setId(c.getId());
-        dto.setAutor(c.getAutor() != null ? c.getAutor().getNombreCompleto() : "Anónimo");
-        dto.setTexto(c.getTexto());
-        dto.setCreadoEn(c.getCreadoEn());
-        return dto;
+        return CommentResponse.builder()
+                .id(c.getId())
+                .texto(c.getTexto())
+                .creadoEn(c.getCreadoEn())
+                .autorId(c.getAutor().getId())
+                .autorNombre(c.getAutor().getNombres() + " " + c.getAutor().getApellidos())
+                .build();
     }
 }

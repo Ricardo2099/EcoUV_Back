@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface ReaccionRepository extends JpaRepository<Reaccion, Long> {
 
+    void deleteByPostId(Long postId);
+
     Optional<Reaccion> findByUsuarioAndPost(User usuario, Post post);
 
     Integer countByPost(Post post);
