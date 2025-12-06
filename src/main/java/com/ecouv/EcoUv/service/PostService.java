@@ -112,4 +112,56 @@ public void eliminarPost(Long postId, Long usuarioId) {
 
         return PostResponseDTO.fromEntity(post);
     }
+
+    // ======================================================
+// FEED: listar posts por categoria
+// ======================================================
+
+public List<PostResponseDTO> listarPorGrupo(Long grupoId, String tipoFeed) {
+    Grupo grupo = grupoRepository.findById(grupoId)
+            .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
+
+    return postRepository.findByGrupoAndTipoFeedOrderByCreadoEnDesc(grupo, tipoFeed)
+            .stream()
+            .map(PostResponseDTO::fromEntity)
+            .toList();
+}
+
+public List<PostResponseDTO> listarPorCarrera(Long carreraId, String tipoFeed) {
+    Carrera carrera = carreraRepository.findById(carreraId)
+            .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
+
+    return postRepository.findByCarreraAndTipoFeedOrderByCreadoEnDesc(carrera, tipoFeed)
+            .stream()
+            .map(PostResponseDTO::fromEntity)
+            .toList();
+}
+
+public List<PostResponseDTO> listarPorPlan(Long planId, String tipoFeed) {
+    Plan plan = planRepository.findById(planId)
+            .orElseThrow(() -> new RuntimeException("Plan no encontrado"));
+
+    return postRepository.findByPlanAndTipoFeedOrderByCreadoEnDesc(plan, tipoFeed)
+            .stream()
+            .map(PostResponseDTO::fromEntity)
+            .toList();
+}
+
+public List<PostResponseDTO> listarPorFacultad(Long facultadId, String tipoFeed) {
+    Facultad facultad = facultadRepository.findById(facultadId)
+            .orElseThrow(() -> new RuntimeException("Facultad no encontrada"));
+
+    return postRepository.findByFacultadAndTipoFeedOrderByCreadoEnDesc(facultad, tipoFeed)
+            .stream()
+            .map(PostResponseDTO::fromEntity)
+            .toList();
+}
+
+public List<PostResponseDTO> listarPorSemestre(Integer semestre, String tipoFeed) {
+    return postRepository.findBySemestreAndTipoFeedOrderByCreadoEnDesc(semestre, tipoFeed)
+            .stream()
+            .map(PostResponseDTO::fromEntity)
+            .toList();
+}
+
 }

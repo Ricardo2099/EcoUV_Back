@@ -43,4 +43,55 @@ public class PostController {
                                                       @RequestBody CrearPostRequest req) {
         return ResponseEntity.ok(postService.editarPost(postId, usuarioId, req));
     }
+
+// ==========================
+// FEEDS POR CATEGORIA
+// ==========================
+
+// Feed por grupo
+@GetMapping("/grupo/{grupoId}")
+public List<PostResponseDTO> feedGrupo(
+        @PathVariable Long grupoId,
+        @RequestParam String tipoFeed
+) {
+    return postService.listarPorGrupo(grupoId, tipoFeed);
+}
+
+// Feed por carrera
+@GetMapping("/carrera/{carreraId}")
+public List<PostResponseDTO> feedCarrera(
+        @PathVariable Long carreraId,
+        @RequestParam String tipoFeed
+) {
+    return postService.listarPorCarrera(carreraId, tipoFeed);
+}
+
+// Feed por plan
+@GetMapping("/plan/{planId}")
+public List<PostResponseDTO> feedPlan(
+        @PathVariable Long planId,
+        @RequestParam String tipoFeed
+) {
+    return postService.listarPorPlan(planId, tipoFeed);
+}
+
+// Feed por facultad
+@GetMapping("/facultad/{facultadId}")
+public List<PostResponseDTO> feedFacultad(
+        @PathVariable Long facultadId,
+        @RequestParam String tipoFeed
+) {
+    return postService.listarPorFacultad(facultadId, tipoFeed);
+}
+
+// Feed por semestre
+@GetMapping("/semestre/{semestre}")
+public List<PostResponseDTO> feedSemestre(
+        @PathVariable Integer semestre,
+        @RequestParam String tipoFeed
+) {
+    return postService.listarPorSemestre(semestre, tipoFeed);
+}
+
+
 }
