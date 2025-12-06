@@ -21,7 +21,8 @@ public class ReaccionController {
     }
 
     @DeleteMapping("/like/{usuarioId}/{postId}")
-    public ResponseEntity<?> quitarLike(@PathVariable Long usuarioId, @PathVariable Long postId) {
+    public ResponseEntity<?> quitarLike(@PathVariable Long usuarioId,
+                                        @PathVariable Long postId) {
         reaccionService.quitarLike(usuarioId, postId);
         return ResponseEntity.ok().build();
     }

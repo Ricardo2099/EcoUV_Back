@@ -7,12 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/comments")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class CommentController {
 
     private final CommentService commentService;
@@ -20,10 +18,5 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<Comentario> crearComentario(@RequestBody CreateCommentRequest req) {
         return ResponseEntity.ok(commentService.crearComentario(req));
-    }
-
-    @GetMapping("/post/{id}")
-    public ResponseEntity<List<Comentario>> obtenerComentarios(@PathVariable Long id) {
-        return ResponseEntity.ok(commentService.obtenerComentarios(id));
     }
 }

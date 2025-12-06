@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,9 +35,5 @@ public class CommentService {
         c.setCreadoEn(LocalDateTime.now());
 
         return comentarioRepository.save(c);
-    }
-
-    public List<Comentario> obtenerComentarios(Long postId) {
-        return comentarioRepository.findByPostIdOrderByCreadoEnDesc(postId);
     }
 }

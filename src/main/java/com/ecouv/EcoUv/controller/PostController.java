@@ -22,6 +22,20 @@ public class PostController {
         return ResponseEntity.ok(postService.crearPost(request));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Post> editarPost(
+            @PathVariable Long id,
+            @RequestBody CrearPostRequest req
+    ) {
+        return ResponseEntity.ok(postService.editarPost(id, req));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarPost(@PathVariable Long id) {
+        postService.eliminarPost(id);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/grupo/{id}")
     public ResponseEntity<List<Post>> feedGrupo(@PathVariable Long id) {
         return ResponseEntity.ok(postService.feedGrupo(id));

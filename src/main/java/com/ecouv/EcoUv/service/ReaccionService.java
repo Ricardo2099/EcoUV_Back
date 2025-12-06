@@ -28,7 +28,6 @@ public class ReaccionService {
         Post post = postRepository.findById(req.getPostId())
                 .orElseThrow(() -> new RuntimeException("Post no encontrado"));
 
-        // Si ya existe like → NO crear otro
         return reaccionRepository.findByUsuarioAndPost(usuario, post)
                 .orElseGet(() -> {
                     Reaccion r = new Reaccion();

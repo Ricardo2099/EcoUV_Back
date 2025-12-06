@@ -6,6 +6,7 @@ import com.ecouv.EcoUv.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -38,8 +39,27 @@ public class PostService {
         p.setPlan(autor.getPlan());
         p.setFacultad(autor.getCarrera().getFacultad());
         p.setSemestre(autor.getSemestre());
+        p.setCreadoEn(LocalDateTime.now());
 
         return postRepository.save(p);
+    }
+
+    public Post editarPost(Long id, CrearPostRequest req) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post no encontrado"));
+
+        post.setContenido(req.getContenido());
+        post.setAdjuntoUrl(req.getAdjuntoUrl());
+        post.setTipoFeed(req.getTipoFeed());
+
+        return postRepository.save(post);
+    }
+
+    public void eliminarPost(Long id) {
+        if (!postRepository.existsById(id)) {
+            throw new RuntimeException("Post no encontrado");
+        }
+        postRepository.deleteById(id);
     }
 
     public List<Post> feedGrupo(Long grupoId) {
