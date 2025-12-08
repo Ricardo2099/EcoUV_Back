@@ -3,9 +3,11 @@ package com.ecouv.EcoUv.controller;
 import com.ecouv.EcoUv.dto.CrearPostRequest;
 import com.ecouv.EcoUv.dto.PostResponseDTO;
 import com.ecouv.EcoUv.service.PostService;
+import com.ecouv.EcoUv.service.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,6 +17,11 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final CloudinaryService cloudinaryService;
+
+    // ==========================
+    // CRUD BÁSICO DE POSTS
+    // ==========================
 
     // Crear post
     @PostMapping
@@ -44,54 +51,67 @@ public class PostController {
         return ResponseEntity.ok(postService.editarPost(postId, usuarioId, req));
     }
 
-// ==========================
-// FEEDS POR CATEGORIA
-// ==========================
+    // ==========================
+    // SUBIR IMAGEN (CLOUDINARY)
+    // ==========================
 
-// Feed por grupo
-@GetMapping("/grupo/{grupoId}")
-public List<PostResponseDTO> feedGrupo(
-        @PathVariable Long grupoId,
-        @RequestParam String tipoFeed
-) {
-    return postService.listarPorGrupo(grupoId, tipoFeed);
-}
+    @PostMapping("/upload-imagen")
+    public ResponseEntity<String> uploadImagen(@RequestParam("file") MultipartFile file) {
 
-// Feed por carrera
-@GetMapping("/carrera/{carreraId}")
-public List<PostResponseDTO> feedCarrera(
-        @PathVariable Long carreraId,
-        @RequestParam String tipoFeed
-) {
-    return postService.listarPorCarrera(carreraId, tipoFeed);
-}
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("El archivo está vacío");
+        }
 
-// Feed por plan
-@GetMapping("/plan/{planId}")
-public List<PostResponseDTO> feedPlan(
-        @PathVariable Long planId,
-        @RequestParam String tipoFeed
-) {
-    return postService.listarPorPlan(planId, tipoFeed);
-}
+        String url = cloudinaryService.uploadImage(file);
+        return ResponseEntity.ok(url);
+    }
 
-// Feed por facultad
-@GetMapping("/facultad/{facultadId}")
-public List<PostResponseDTO> feedFacultad(
-        @PathVariable Long facultadId,
-        @RequestParam String tipoFeed
-) {
-    return postService.listarPorFacultad(facultadId, tipoFeed);
-}
+    // ==========================
+    // FEEDS POR CATEGORIA
+    // ==========================
 
-// Feed por semestre
-@GetMapping("/semestre/{semestre}")
-public List<PostResponseDTO> feedSemestre(
-        @PathVariable Integer semestre,
-        @RequestParam String tipoFeed
-) {
-    return postService.listarPorSemestre(semestre, tipoFeed);
-}
+    // Feed por grupo
+    @GetMapping("/grupo/{grupoId}")
+    public List<PostResponseDTO> feedGrupo(
+            @PathVariable Long grupoId,
+            @RequestParam String tipoFeed
+    ) {
+        return postService.listarPorGrupo(grupoId, tipoFeed);
+    }
 
+    // Feed por carrera
+    @GetMapping("/carrera/{carreraId}")
+    public List<PostResponseDTO> feedCarrera(
+            @PathVariable Long carreraId,
+            @RequestParam String tipoFeed
+    ) {
+        return postService.listarPorCarrera(carreraId, tipoFeed);
+    }
 
+    // Feed por plan
+    @GetMapping("/plan/{planId}")
+    public List<PostResponseDTO> feedPlan(
+            @PathVariable Long planId,
+            @RequestParam String tipoFeed
+    ) {
+        return postService.listarPorPlan(planId, tipoFeed);
+    }
+
+    // Feed por facultad
+    @GetMapping("/facultad/{facultadId}")
+    public List<PostResponseDTO> feedFacultad(
+            @PathVariable Long facultadId,
+            @RequestParam String tipoFeed
+    ) {
+        return postService.listarPorFacultad(facultadId, tipoFeed);
+    }
+
+    // Feed por semestre
+    @GetMapping("/semestre/{semestre}")
+    public List<PostResponseDTO> feedSemestre(
+            @PathVariable Integer semestre,
+            @RequestParam String tipoFeed
+    ) {
+        return postService.listarPorSemestre(semestre, tipoFeed);
+    }
 }
