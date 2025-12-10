@@ -28,7 +28,7 @@ public class UserResponse {
         dto.setMatricula(user.getMatricula());
         dto.setCarrera(user.getCarrera() != null ? user.getCarrera().getNombre() : null);
         dto.setPlan(user.getPlan() != null ? user.getPlan().getNombre() : null);
-        dto.setGrupo(user.getGrupo() != null ? user.getGrupo().getGrupo() : null);
+        dto.setGrupo(user.getGrupo() != null ? user.getGrupo().getNombre() : null);
         dto.setSemestre(user.getSemestre());
         dto.setCampus(user.getCampus());
         return dto;
