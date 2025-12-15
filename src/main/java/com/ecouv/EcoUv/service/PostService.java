@@ -4,16 +4,19 @@ import com.ecouv.EcoUv.dto.CrearPostRequest;
 import com.ecouv.EcoUv.dto.PostResponseDTO;
 import com.ecouv.EcoUv.model.*;
 import com.ecouv.EcoUv.repository.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
- private final ReaccionRepository reaccionRepository;
+
+    private final ReaccionRepository reaccionRepository;
     private final ComentarioRepository comentarioRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
@@ -72,25 +75,24 @@ public class PostService {
     // ELIMINAR POST (solo autor)
     // ======================================================
     @Transactional
-public void eliminarPost(Long postId, Long usuarioId) {
+    public void eliminarPost(Long postId, Long usuarioId) {
 
-    Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new RuntimeException("Post no encontrado"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post no encontrado"));
 
-    if (!post.getAutor().getId().equals(usuarioId)) {
-        throw new RuntimeException("No tienes permiso para eliminar este post");
+        if (!post.getAutor().getId().equals(usuarioId)) {
+            throw new RuntimeException("No tienes permiso para eliminar este post");
+        }
+
+        // 1. Borrar reacciones asociadas
+        reaccionRepository.deleteByPostId(postId);
+
+        // 2. Borrar comentarios asociados
+        comentarioRepository.deleteByPostId(postId);
+
+        // 3. Borrar el post
+        postRepository.delete(post);
     }
-
-    // 1. Borrar reacciones asociadas
-    reaccionRepository.deleteByPostId(postId);
-
-    // 2. Borrar comentarios asociados
-    comentarioRepository.deleteByPostId(postId);
-
-    // 3. Borrar el post
-    postRepository.delete(post);
-}
-
 
     // ======================================================
     // EDITAR POST (solo autor)
@@ -114,54 +116,78 @@ public void eliminarPost(Long postId, Long usuarioId) {
     }
 
     // ======================================================
-// FEED: listar posts por categoria
-// ======================================================
+    // FEED: listar posts por categoria
+    // ======================================================
+    public List<PostResponseDTO> listarPorGrupo(Long grupoId, String tipoFeed) {
+        Grupo grupo = grupoRepository.findById(grupoId)
+                .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
 
-public List<PostResponseDTO> listarPorGrupo(Long grupoId, String tipoFeed) {
-    Grupo grupo = grupoRepository.findById(grupoId)
-            .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
+        return postRepository.findByGrupoAndTipoFeedOrderByCreadoEnDesc(grupo, tipoFeed)
+                .stream()
+                .map(PostResponseDTO::fromEntity)
+                .toList();
+    }
 
-    return postRepository.findByGrupoAndTipoFeedOrderByCreadoEnDesc(grupo, tipoFeed)
-            .stream()
-            .map(PostResponseDTO::fromEntity)
-            .toList();
-}
+    public List<PostResponseDTO> listarPorCarrera(Long carreraId, String tipoFeed) {
+        Carrera carrera = carreraRepository.findById(carreraId)
+                .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
 
-public List<PostResponseDTO> listarPorCarrera(Long carreraId, String tipoFeed) {
-    Carrera carrera = carreraRepository.findById(carreraId)
-            .orElseThrow(() -> new RuntimeException("Carrera no encontrada"));
+        return postRepository.findByCarreraAndTipoFeedOrderByCreadoEnDesc(carrera, tipoFeed)
+                .stream()
+                .map(PostResponseDTO::fromEntity)
+                .toList();
+    }
 
-    return postRepository.findByCarreraAndTipoFeedOrderByCreadoEnDesc(carrera, tipoFeed)
-            .stream()
-            .map(PostResponseDTO::fromEntity)
-            .toList();
-}
+    public List<PostResponseDTO> listarPorPlan(Long planId, String tipoFeed) {
+        Plan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new RuntimeException("Plan no encontrado"));
 
-public List<PostResponseDTO> listarPorPlan(Long planId, String tipoFeed) {
-    Plan plan = planRepository.findById(planId)
-            .orElseThrow(() -> new RuntimeException("Plan no encontrado"));
+        return postRepository.findByPlanAndTipoFeedOrderByCreadoEnDesc(plan, tipoFeed)
+                .stream()
+                .map(PostResponseDTO::fromEntity)
+                .toList();
+    }
 
-    return postRepository.findByPlanAndTipoFeedOrderByCreadoEnDesc(plan, tipoFeed)
-            .stream()
-            .map(PostResponseDTO::fromEntity)
-            .toList();
-}
+    public List<PostResponseDTO> listarPorFacultad(Long facultadId, String tipoFeed) {
+        Facultad facultad = facultadRepository.findById(facultadId)
+                .orElseThrow(() -> new RuntimeException("Facultad no encontrada"));
 
-public List<PostResponseDTO> listarPorFacultad(Long facultadId, String tipoFeed) {
-    Facultad facultad = facultadRepository.findById(facultadId)
-            .orElseThrow(() -> new RuntimeException("Facultad no encontrada"));
+        return postRepository.findByFacultadAndTipoFeedOrderByCreadoEnDesc(facultad, tipoFeed)
+                .stream()
+                .map(PostResponseDTO::fromEntity)
+                .toList();
+    }
 
-    return postRepository.findByFacultadAndTipoFeedOrderByCreadoEnDesc(facultad, tipoFeed)
-            .stream()
-            .map(PostResponseDTO::fromEntity)
-            .toList();
-}
+    public List<PostResponseDTO> listarPorSemestre(Integer semestre, String tipoFeed) {
+        return postRepository.findBySemestreAndTipoFeedOrderByCreadoEnDesc(semestre, tipoFeed)
+                .stream()
+                .map(PostResponseDTO::fromEntity)
+                .toList();
+    }
 
-public List<PostResponseDTO> listarPorSemestre(Integer semestre, String tipoFeed) {
-    return postRepository.findBySemestreAndTipoFeedOrderByCreadoEnDesc(semestre, tipoFeed)
-            .stream()
-            .map(PostResponseDTO::fromEntity)
-            .toList();
-}
+    // ======================================================
+    // FEED MEZCLADO (por usuario)
+    // - Se basa en el grupo del usuario (y su plan/carrera/facultad)
+    // - Limita resultados con paginación
+    // ======================================================
+    public Page<PostResponseDTO> feedMixtoPorUsuario(Long userId, int page, int size) {
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Long grupoId = user.getGrupo().getId();
+        Long planId = user.getPlan().getId();
+        Long carreraId = user.getCarrera().getId();
+        Long facultadId = user.getCarrera().getFacultad().getId();
+
+        return postRepository
+                .findDistinctByGrupoIdOrPlanIdOrCarreraIdOrFacultadIdOrderByCreadoEnDesc(
+                        grupoId,
+                        planId,
+                        carreraId,
+                        facultadId,
+                        PageRequest.of(page, size)
+                )
+                .map(PostResponseDTO::fromEntity);
+    }
 }

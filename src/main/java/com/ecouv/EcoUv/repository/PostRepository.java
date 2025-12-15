@@ -1,6 +1,8 @@
 package com.ecouv.EcoUv.repository;
 
 import com.ecouv.EcoUv.model.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -16,4 +18,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByFacultadAndTipoFeedOrderByCreadoEnDesc(Facultad facultad, String tipoFeed);
 
     List<Post> findBySemestreAndTipoFeedOrderByCreadoEnDesc(Integer semestre, String tipoFeed);
+
+    // ======================================================
+    // FEED MEZCLADO (por usuario): grupo OR plan OR carrera OR facultad
+    // Paginado para limitar cantidad
+    // ======================================================
+    Page<Post> findDistinctByGrupoIdOrPlanIdOrCarreraIdOrFacultadIdOrderByCreadoEnDesc(
+            Long grupoId,
+            Long planId,
+            Long carreraId,
+            Long facultadId,
+            Pageable pageable
+    );
 }
