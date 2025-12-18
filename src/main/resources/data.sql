@@ -53,7 +53,7 @@ ON CONFLICT (id) DO NOTHING;
 -- GRUPOS
 -- =============================================
 
-INSERT INTO grupos (clave, nombre, carrera_id, plan_id) VALUES
+INSERT INTO grupos (clave, grupo, carrera_id, plan_id) VALUES
   ('ICIV-101','101',1,1), ('ICIV-102','102',1,1),
   ('ICIV-201','201',1,1), ('ICIV-202','202',1,1),
   ('ICIV-301','301',1,1), ('ICIV-302','302',1,1),
