@@ -27,25 +27,29 @@ public class PostResponseDTO {
     // ======================================================
     // MÉTODO QUE EL SERVICIO NECESITA
     // ======================================================
-    public static PostResponseDTO fromEntity(Post post) {
-        PostResponseDTO dto = new PostResponseDTO();
+public static PostResponseDTO fromEntity(Post post) {
+    PostResponseDTO dto = new PostResponseDTO();
 
-        dto.setId(post.getId());
-        dto.setContenido(post.getContenido());
-        dto.setAdjuntoUrl(post.getAdjuntoUrl());
-        dto.setCreadoEn(post.getCreadoEn());
-        dto.setTipoFeed(post.getTipoFeed());
+    dto.setId(post.getId());
+    dto.setContenido(post.getContenido());
+    dto.setAdjuntoUrl(post.getAdjuntoUrl());
+    dto.setCreadoEn(post.getCreadoEn());
+    dto.setTipoFeed(post.getTipoFeed());
 
+    if (post.getAutor() != null) {
         dto.setAutorId(post.getAutor().getId());
         dto.setAutorNombre(post.getAutor().getNombreCompleto());
-
-        dto.setGrupoId(post.getGrupo().getId());
-        dto.setCarreraId(post.getCarrera().getId());
-        dto.setPlanId(post.getPlan().getId());
-        dto.setFacultadId(post.getFacultad().getId());
-
-        dto.setSemestre(post.getSemestre());
-
-        return dto;
     }
+
+    // ===== RELACIONES (NULL SAFE) =====
+    dto.setGrupoId(post.getGrupo() != null ? post.getGrupo().getId() : null);
+    dto.setCarreraId(post.getCarrera() != null ? post.getCarrera().getId() : null);
+    dto.setPlanId(post.getPlan() != null ? post.getPlan().getId() : null);
+    dto.setFacultadId(post.getFacultad() != null ? post.getFacultad().getId() : null);
+
+    dto.setSemestre(post.getSemestre());
+
+    return dto;
+}
+
 }
